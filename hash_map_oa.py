@@ -1,8 +1,8 @@
-# Name:
-# OSU Email:
-# Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
+# Name: Holden Chen
+# OSU Email: chenhol@oregonstate.edu
+# Course: CS261 - Data Structures ; section 400
+# Assignment: 6
+# Due Date: 03/12/2022
 # Description:
 
 

@@ -1,8 +1,8 @@
-# Name:
-# OSU Email:
-# Course: CS261 - Data Structures
-# Assignment:
-# Due Date:
+# Name: Holden Chen
+# OSU Email: chenhol@oregonstate.edu
+# Course: CS261 - Data Structures ; section 400
+# Assignment: 6
+# Due Date: 03/12/2022
 # Description:
 
 
@@ -11,7 +11,7 @@ from a6_include import *
 
 def hash_function_1(key: str) -> int:
     """
-    Sample Hash function #1 to be used with A5 HashMap implementation
+    Sample Hash function #1 to be used with A6 HashMap implementation
     DO NOT CHANGE THIS FUNCTION IN ANY WAY
     """
     hash = 0
@@ -22,7 +22,7 @@ def hash_function_1(key: str) -> int:
 
 def hash_function_2(key: str) -> int:
     """
-    Sample Hash function #2 to be used with A5 HashMap implementation
+    Sample Hash function #2 to be used with A6 HashMap implementation
     DO NOT CHANGE THIS FUNCTION IN ANY WAY
     """
     hash, index = 0, 0
@@ -60,9 +60,18 @@ class HashMap:
 
     def clear(self) -> None:
         """
-        TODO: Write this implementation
+        Takes no parameters and removes all the key/value
+        pairs from the hash map. This method returns None
+        and DOES NOT change the underlying capacity
+        of the hash table.
         """
-        pass
+        # just reinitialize the buckets DA and size; don't change capacity
+        self.buckets = DynamicArray()
+        self.size = 0
+
+        # populate new buckets DA with buckets (Linked Lists)
+        for _ in range(self.capacity):
+            self.buckets.append(LinkedList())
 
     def get(self, key: str) -> object:
         """
@@ -72,7 +81,12 @@ class HashMap:
 
     def put(self, key: str, value: object) -> None:
         """
-        TODO: Write this implementation
+        Takes a key parameter and value parameter and updates
+        the key/value pair in the hash map. If the given key
+        exists, then the given value will replace the current
+        value at that key. If the given key is not in the hash
+        map, a new key/value pair will be added. This method
+        returns None.
         """
         pass
 
@@ -90,15 +104,39 @@ class HashMap:
 
     def empty_buckets(self) -> int:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns an integer that
+        represents the number of empty buckets in the
+        hash table.
         """
-        pass
+        number_of_empty_buckets = 0
+
+        # count no. of empty buckets in the DA
+        for index in range(self.buckets.length()):
+            bucket = self.buckets[index]
+
+            if bucket.length() == 0:
+                number_of_empty_buckets += 1
+            else:
+                continue
+
+        return number_of_empty_buckets
 
     def table_load(self) -> float:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns a float value that
+        represents the current hash table load factor.
         """
-        pass
+        number_of_elements_in_table = 0
+        number_of_buckets = self.buckets.length()
+
+        # accumulate number of elements in table
+        for index in range(number_of_buckets):
+            bucket = self.buckets[index]
+            number_of_elements_in_table += bucket.length()
+
+        # calculate and return the load factor
+        load_factor = number_of_elements_in_table / number_of_buckets
+        return load_factor
 
     def resize_table(self, new_capacity: int) -> None:
         """
