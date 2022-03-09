@@ -3,7 +3,9 @@
 # Course: CS261 - Data Structures ; section 400
 # Assignment: 6
 # Due Date: 03/12/2022
-# Description:
+# Description: This file contains an implementation of a HashMap using Separate Chaining.
+# solution methods are: put(), get(), remove(), contains_key(), clear(), empty_pockets(),
+# empty_buckets(), resize_tables(), table_load(), and get_keys()
 
 
 from a6_include import *
@@ -69,15 +71,31 @@ class HashMap:
         self.buckets = DynamicArray()
         self.size = 0
 
-        # populate new buckets DA with buckets (Linked Lists)
+        # populate new DA with buckets (Linked Lists)
         for _ in range(self.capacity):
             self.buckets.append(LinkedList())
 
     def get(self, key: str) -> object:
         """
-        TODO: Write this implementation
+        Takes a key parameter and returns the value associated
+        with the given key. This method returns None if the given
+        key is not in the hash map.
         """
-        pass
+        target_index = self.hash_function(key) % self.buckets.length()
+        target_bucket = self.buckets[target_index]  # this is a LinkedList
+
+        if self.size == 0 or target_bucket.length() == 0:
+            return
+
+        for node in target_bucket:
+
+            if node.key == key:
+                return node.value
+            else:
+                continue
+
+        # no match found
+        return
 
     def put(self, key: str, value: object) -> None:
         """
@@ -88,19 +106,65 @@ class HashMap:
         map, a new key/value pair will be added. This method
         returns None.
         """
-        pass
+        target_index = self.hash_function(key) % self.buckets.length()
+        target_bucket = self.buckets[target_index]  # this is a LinkedList
+
+        if target_bucket.length() == 0:
+            target_bucket.insert(key, value)
+            self.size += 1
+            return
+
+        for node in target_bucket:
+
+            # overwrite the value if the key already exists
+            if node.key == key:
+                node.value = value
+                return
+
+            continue
+
+        target_bucket.insert(key, value)
+        self.size += 1
 
     def remove(self, key: str) -> None:
         """
-        TODO: Write this implementation
+        Takes a key parameter and removes the given key
+        and its associated value from the hash map. If
+        the key does not match any of the keys in the hash
+        map, then this method makes no changes.
         """
-        pass
+        target_index = self.hash_function(key) % self.buckets.length()
+        target_bucket = self.buckets[target_index]  # this is a LinkedList
+
+        if self.size == 0 or target_bucket.length() == 0:
+            return
+
+        if target_bucket.remove(key) is True:
+            self.size -= 1
+            return
 
     def contains_key(self, key: str) -> bool:
         """
-        TODO: Write this implementation
+        Takes a key parameter and returns a boolean value
+        that represents whether the given key is in the hash
+        map or not. It returns True if the given key is in the
+        hash map and returns false otherwise.
         """
-        pass
+        target_index = self.hash_function(key) % self.buckets.length()
+        target_bucket = self.buckets[target_index]  # this is a LinkedList
+
+        if self.size == 0 or target_bucket.length() == 0:
+            return False
+
+        for node in target_bucket:
+
+            if node.key == key:
+                return True
+            else:
+                continue
+
+        # no match found
+        return False
 
     def empty_buckets(self) -> int:
         """
@@ -140,15 +204,47 @@ class HashMap:
 
     def resize_table(self, new_capacity: int) -> None:
         """
-        TODO: Write this implementation
+        Takes an integer parameter that represents the new
+        capacity and changes the capacity of the internal
+        hash table. This method returns None.
         """
-        pass
+        if new_capacity < 1:
+            return
+
+        new_da = DynamicArray()
+
+        for index in range(new_capacity):
+            new_da.append(LinkedList())
+
+        for index in range(self.buckets.length()):
+            bucket = self.buckets[index]  # this is a LinkedList
+
+            for node in bucket:
+                new_hash = self.hash_function(node.key)
+                new_index = new_hash % new_capacity
+                new_da[new_index].insert(node.key, node.value)
+
+        self.capacity = new_capacity
+        self.buckets = new_da
 
     def get_keys(self) -> DynamicArray:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns a DynamicArray object
+        that contains all the keys that exist in the hash
+        map.
         """
-        pass
+        output_da = DynamicArray()
+
+        if self.size == 0:
+            return output_da
+
+        for index in range(self.buckets.length()):
+            bucket = self.buckets[index]
+
+            for node in bucket:
+                output_da.append(node.key)
+
+        return output_da
 
 
 # BASIC TESTING
