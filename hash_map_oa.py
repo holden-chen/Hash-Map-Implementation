@@ -3,7 +3,9 @@
 # Course: CS261 - Data Structures ; section 400
 # Assignment: 6
 # Due Date: 03/12/2022
-# Description:
+# Description: This file contains an implementation of a HashMap using Open Addressing.
+# solution methods are: put(), get(), remove(), contains_key(), clear(), empty_pockets(),
+# empty_buckets(), resize_tables(), table_load(), and get_keys()
 
 
 from a6_include import *
@@ -81,65 +83,271 @@ class HashMap:
 
     def clear(self) -> None:
         """
-        TODO: Write this implementation
+        Takes no parameters and removes all the key/value
+        pairs from the hash map. This method returns None
+        and DOES NOT change the underlying capacity
+        of the hash table.
         """
-        pass
+        # just reinitialize the buckets DA and size; don't change capacity
+        self.buckets = DynamicArray()
+        self.size = 0
+
+        # populate new DA with buckets (Linked Lists)
+        for _ in range(self.capacity):
+            self.buckets.append(None)
 
     def get(self, key: str) -> object:
         """
-        TODO: Write this implementation
+        Takes a key parameter and returns the value associated
+        with the given key. This method returns None if the given
+        key is not in the hash map.
         """
+        initial_index = self.hash_function(key) % self.buckets.length()
+
+        if self.buckets[initial_index] is not None:
+
+            if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
+                return self.buckets[initial_index].value
+
+            # quadratic probing required
+            probe_val = 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+            while self.buckets[target_index] is not None:
+
+                if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
+                    return self.buckets[target_index].value
+
+                probe_val += 1
+                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+            # no match found
+            return
+
         # quadratic probing required
-        pass
+        probe_val = 1
+        target_index = (initial_index+ probe_val ** 2) % self.buckets.length()
+
+        while self.buckets[target_index] is not None:
+
+            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
+                return self.buckets[target_index].value
+
+            probe_val += 1
+            target_index = (target_index + probe_val ** 2) % self.buckets.length()
+
+        # no match found
+        return
 
     def put(self, key: str, value: object) -> None:
         """
-        TODO: Write this implementation
+        Takes a key parameter and value parameter and updates
+        the key/value pair in the hash map. If the given key
+        exists, then the given value will replace the current
+        value at that key. If the given key is not in the hash
+        map, a new key/value pair will be added. This method
+        returns None
         """
         # remember, if the load factor is greater than or equal to 0.5,
         # resize the table before putting the new key/value pair
-        #
+        if self.table_load() >= 0.5:
+            self.resize_table(self.capacity*2)  # resize table to double its current capacity
+
+        initial_index = self.hash_function(key) % self.buckets.length()
+
+        if self.buckets[initial_index] is None:
+            self.buckets[initial_index] = HashEntry(key, value)
+            self.size += 1
+            return
+
+        if self.buckets[initial_index].is_tombstone:
+            self.buckets[initial_index].key = key
+            self.buckets[initial_index].value = value
+            self.buckets[initial_index].is_tombstone = False
+            self.size += 1
+            return
+
+        if self.buckets[initial_index].key == key:
+            self.buckets[initial_index].value = value
+            return
+
         # quadratic probing required
-        pass
+        probe_val = 1
+        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        while target_index < self.buckets.length():
+
+            if self.buckets[target_index] is None:
+                self.buckets[target_index] = HashEntry(key, value)
+                self.size += 1
+                return
+
+            if self.buckets[target_index].is_tombstone:
+                self.buckets[target_index].key = key
+                self.buckets[target_index].value = value
+                self.buckets[target_index].is_tombstone = False
+                self.size += 1
+                return
+
+            if self.buckets[target_index].key == key:
+                self.buckets[target_index].value = value
+                return
+
+            probe_val += 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
 
     def remove(self, key: str) -> None:
         """
-        TODO: Write this implementation
+        Takes a key parameter and removes the given key
+        and its associated value from the hash map. If
+        the key does not match any of the keys in the hash
+        map, then this method makes no changes.
         """
+        initial_index = self.hash_function(key) % self.buckets.length()
+
+        if self.buckets[initial_index] is not None:
+
+            if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
+                self.buckets[initial_index].is_tombstone = True
+                self.size -= 1
+                return
+
+            # quadratic probing required
+            probe_val = 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+            while self.buckets[target_index] is not None:
+
+                if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
+                    self.buckets[target_index].is_tombstone = True
+                    self.size -= 1
+                    return
+
+                probe_val += 1
+                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+            # no match found
+            return
+
         # quadratic probing required
-        pass
+        probe_val = 1
+        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        while self.buckets[target_index] is not None:
+
+            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
+                self.buckets[target_index].is_tombstone = True
+                self.size -= 1
+                return
+
+            probe_val += 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        # no match found
+        return
 
     def contains_key(self, key: str) -> bool:
         """
-        TODO: Write this implementation
+        Takes a key parameter and returns a boolean value
+        that represents whether the given key is in the hash
+        map or not. It returns True if the given key is in the
+        hash map and returns False otherwise.
         """
-        # quadratic probing required
-        pass
+        initial_index = self.hash_function(key) % self.buckets.length()
+
+        if self.size == 0:
+            return False
+
+        if self.buckets[initial_index] is not None:
+
+            if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
+                return True
+
+            probe_val = 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+            while self.buckets[target_index] is not None:
+
+                if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
+                    return True
+
+                probe_val += 1
+                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        probe_val = 1
+        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        while self.buckets[target_index] is not None:
+
+            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
+                return True
+
+            # quadratic probing required
+            probe_val += 1
+            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+
+        return False
 
     def empty_buckets(self) -> int:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns an integer that
+        represents the number of empty buckets in the
+        hash table.
         """
-        pass
+        return self.capacity - self.size
 
     def table_load(self) -> float:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns a float value that
+        represents the current hash table load factor.
         """
-        pass
+        return self.size / self.buckets.length()
 
     def resize_table(self, new_capacity: int) -> None:
         """
-        TODO: Write this implementation
+        Takes an integer parameter that represents the new
+        capacity and changes the capacity of the internal
+        hash table. This method returns None. If the new_capacity
+        less than 1 or less than the number of elements in the hash
+        map, then no modifications are made.
         """
-        # remember to rehash non-deleted entries into new table
-        pass
+        # if new_capacity not valid, then return
+        if new_capacity < 1 or new_capacity < self.size:
+            return
+
+        # initialize new DA
+        new_da = DynamicArray()
+        for index in range(new_capacity):
+            new_da.append(None)
+
+        # rehash non-deleted entries into new table
+        for index in range(self.buckets.length()):
+
+            if self.buckets[index] is not None and self.buckets[index].is_tombstone is False:
+                new_hash = self.hash_function(self.buckets[index].key)
+                new_index = new_hash % new_capacity
+                new_da[new_index] = HashEntry(self.buckets[index].key, self.buckets[index].value)
+
+        self.capacity = new_capacity
+        self.buckets = new_da
 
     def get_keys(self) -> DynamicArray:
         """
-        TODO: Write this implementation
+        Takes no parameters and returns a DynamicArray object
+        that contains all the keys that exist in the hash
+        map.
         """
-        pass
+        output_da = DynamicArray()
+
+        if self.size == 0:
+            return output_da
+
+        for index in range(self.buckets.length()):
+
+            if self.buckets[index] is not None and self.buckets[index].is_tombstone is False:
+                output_da.append(self.buckets[index].key)
+
+        return output_da
 
 
 if __name__ == "__main__":
