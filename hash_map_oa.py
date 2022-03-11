@@ -111,31 +111,40 @@ class HashMap:
 
             # quadratic probing required
             probe_val = 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+            target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-            while self.buckets[target_index] is not None:
+            while probe_val < self.buckets.length():
 
-                if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
-                    return self.buckets[target_index].value
+                if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-                probe_val += 1
-                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+                    if self.buckets[target_index].key == key:
+                        return self.buckets[target_index].value
+                    else:
+                        probe_val += 1
+                        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
             # no match found
             return
 
         # quadratic probing required
         probe_val = 1
-        target_index = (initial_index+ probe_val ** 2) % self.buckets.length()
+        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-        while self.buckets[target_index] is not None:
+        while probe_val < self.buckets.length():
 
-            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
-                return self.buckets[target_index].value
+            if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-            probe_val += 1
-            target_index = (target_index + probe_val ** 2) % self.buckets.length()
-
+                if self.buckets[target_index].key == key:
+                    return self.buckets[target_index].value
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+            else:
+                probe_val += 1
+                target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
         # no match found
         return
 
@@ -148,10 +157,10 @@ class HashMap:
         map, a new key/value pair will be added. This method
         returns None
         """
-        # remember, if the load factor is greater than or equal to 0.5,
+        # if the load factor is greater than or equal to 0.5,
         # resize the table before putting the new key/value pair
         if self.table_load() >= 0.5:
-            self.resize_table(self.capacity*2)  # resize table to double its current capacity
+            self.resize_table(self.capacity*2)
 
         initial_index = self.hash_function(key) % self.buckets.length()
 
@@ -173,9 +182,9 @@ class HashMap:
 
         # quadratic probing required
         probe_val = 1
-        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-        while target_index < self.buckets.length():
+        while probe_val < self.buckets.length():
 
             if self.buckets[target_index] is None:
                 self.buckets[target_index] = HashEntry(key, value)
@@ -194,7 +203,7 @@ class HashMap:
                 return
 
             probe_val += 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+            target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
     def remove(self, key: str) -> None:
         """
@@ -214,35 +223,43 @@ class HashMap:
 
             # quadratic probing required
             probe_val = 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+            target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-            while self.buckets[target_index] is not None:
+            while probe_val < self.buckets.length():
 
-                if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
-                    self.buckets[target_index].is_tombstone = True
-                    self.size -= 1
-                    return
+                if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-                probe_val += 1
-                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
-
-            # no match found
+                    if self.buckets[target_index].key == key:
+                        self.buckets[target_index].is_tombstone = True
+                        self.size -= 1
+                        return
+                    else:
+                        probe_val += 1
+                        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+            # not match found
             return
 
         # quadratic probing required
         probe_val = 1
-        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-        while self.buckets[target_index] is not None:
+        while probe_val < self.buckets.length():
 
-            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
-                self.buckets[target_index].is_tombstone = True
-                self.size -= 1
-                return
+            if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-            probe_val += 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+                if self.buckets[target_index].key == key:
+                    self.buckets[target_index].is_tombstone = True
 
+                    return
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+            else:
+                probe_val += 1
+                target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
         # no match found
         return
 
@@ -258,34 +275,42 @@ class HashMap:
         if self.size == 0:
             return False
 
-        if self.buckets[initial_index] is not None:
+        if self.buckets[initial_index] is not None and self.buckets[initial_index].is_tombstone is False:
 
-            if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
+            if self.buckets[initial_index].key == key:
                 return True
 
             probe_val = 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+            target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-            while self.buckets[target_index] is not None:
+            while probe_val < self.buckets.length():
 
-                if self.buckets[initial_index].is_tombstone is False and self.buckets[initial_index].key == key:
-                    return True
+                if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-                probe_val += 1
-                target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+                    if self.buckets[target_index].key == key:
+                        return True
+                    else:
+                        probe_val += 1
+                        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+            return False
 
         probe_val = 1
-        target_index = (initial_index + probe_val ** 2) % self.buckets.length()
+        target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
 
-        while self.buckets[target_index] is not None:
+        while probe_val < self.buckets.length():
+            if self.buckets[target_index] is not None and self.buckets[target_index].is_tombstone is False:
 
-            if self.buckets[target_index].is_tombstone is False and self.buckets[target_index].key == key:
-                return True
-
-            # quadratic probing required
-            probe_val += 1
-            target_index = (initial_index + probe_val ** 2) % self.buckets.length()
-
+                if self.buckets[target_index].key == key:
+                    return True
+                else:
+                    probe_val += 1
+                    target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
+            else:
+                probe_val += 1
+                target_index = (initial_index + probe_val * probe_val) % self.buckets.length()
         return False
 
     def empty_buckets(self) -> int:
@@ -315,21 +340,16 @@ class HashMap:
         if new_capacity < 1 or new_capacity < self.size:
             return
 
-        # initialize new DA
-        new_da = DynamicArray()
-        for index in range(new_capacity):
-            new_da.append(None)
+        temp_hash_map = HashMap(new_capacity, self.hash_function)
 
         # rehash non-deleted entries into new table
         for index in range(self.buckets.length()):
 
             if self.buckets[index] is not None and self.buckets[index].is_tombstone is False:
-                new_hash = self.hash_function(self.buckets[index].key)
-                new_index = new_hash % new_capacity
-                new_da[new_index] = HashEntry(self.buckets[index].key, self.buckets[index].value)
+                temp_hash_map.put(self.buckets[index].key, self.buckets[index].value)
 
-        self.capacity = new_capacity
-        self.buckets = new_da
+        self.buckets = temp_hash_map.buckets
+        self.capacity = temp_hash_map.capacity
 
     def get_keys(self) -> DynamicArray:
         """
